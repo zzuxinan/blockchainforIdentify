@@ -1,0 +1,30 @@
+{
+  "name": "cursor001-platformwithblockchain",
+  "version": "1.0.0",
+  "description": "## 目录 - [项目概述](#项目概述) - [技术栈](#技术栈) - [核心功能](#核心功能) - [系统设计](#系统设计)   - [身份认证流程](#身份认证流程)   - [权限管理](#权限管理) - [项目结构](#项目结构) - [开发计划](#开发计划) - [环境要求](#环境要求) - [安装与运行](#安装与运行) - [贡献指南](#贡献指南) - [许可证](#许可证)",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zzuxinan/blockchainforIdentify.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zzuxinan/blockchainforIdentify/issues"
+  },
+  "homepage": "https://github.com/zzuxinan/blockchainforIdentify#readme",
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.3.0"
+  },
+  "devDependencies": {
+    "ganache": "^7.9.2"
+  }
+}
