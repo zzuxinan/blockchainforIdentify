@@ -1,124 +1,136 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-
-contract IdentityRegistry is Ownable {
-    // 用户角色枚举
-    enum Role {
-        USER,
-        VERIFIER,
-        ADMIN
-    }
-
-    // 用户信息结构
+contract IdentityRegistry {
     struct UserInfo {
-        bytes32 emailHash;
-        bytes32 infoHash;
+        string email;
+        string personalInfo;
         bool isVerified;
-        Role role;
         uint256 registrationTime;
+        bool exists;
+        bool isPending;
     }
 
-    // 事件定义
-    event UserRegistered(address indexed user, bytes32 emailHash);
-    event UserVerified(address indexed user);
-    event RoleChanged(address indexed user, Role role);
-
-    // 状态变量
+    address public owner;
     mapping(address => UserInfo) public users;
-    mapping(bytes32 => bool) public registeredEmailHashes;
-    mapping(address => bool) public isVerifier;
-    mapping(address => bool) public isAdmin;
+    mapping(address => bool) public admins;
+    address[] public pendingUsers;
 
-    // 修饰器
-    modifier onlyVerified() {
-        require(users[msg.sender].isVerified, "User not verified");
-        _;
-    }
+    event UserRegistered(address indexed user, string email, uint256 registrationTime);
+    event UserVerified(address indexed user, bool approved);
+    event UserRejected(address indexed user, string reason);
+    event AdminAdded(address indexed admin);
+    event AdminRemoved(address indexed admin);
 
-    modifier onlyVerifier() {
-        require(isVerifier[msg.sender], "Not a verifier");
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner can call this function");
         _;
     }
 
     modifier onlyAdmin() {
-        require(isAdmin[msg.sender], "Not an admin");
+        require(admins[msg.sender], "Only admin can call this function");
         _;
     }
 
-    // 构造函数
-    constructor() Ownable(msg.sender) {
-        // 部署者自动成为管理员
-        isAdmin[msg.sender] = true;
-        users[msg.sender] = UserInfo({
-            emailHash: bytes32(0),
-            infoHash: bytes32(0),
-            isVerified: true,
-            role: Role.ADMIN,
-            registrationTime: block.timestamp
-        });
+    constructor() {
+        owner = msg.sender;
+        admins[msg.sender] = true;
     }
 
-    // 用户注册
-    function register(bytes32 emailHash, bytes32 infoHash) external {
-        require(users[msg.sender].registrationTime == 0, "Already registered");
-        require(!registeredEmailHashes[emailHash], "Email already registered");
-
+    function register(string memory email, string memory personalInfo) public {
+        require(!users[msg.sender].exists, "User already registered");
+        
         users[msg.sender] = UserInfo({
-            emailHash: emailHash,
-            infoHash: infoHash,
+            email: email,
+            personalInfo: personalInfo,
             isVerified: false,
-            role: Role.USER,
-            registrationTime: block.timestamp
+            registrationTime: block.timestamp,
+            exists: true,
+            isPending: true
         });
-
-        registeredEmailHashes[emailHash] = true;
-        emit UserRegistered(msg.sender, emailHash);
+        
+        pendingUsers.push(msg.sender);
+        emit UserRegistered(msg.sender, email, block.timestamp);
     }
 
-    // 验证用户
-    function verifyUser(address user) external onlyVerifier {
-        require(users[user].registrationTime > 0, "User not registered");
-        require(!users[user].isVerified, "Already verified");
-
+    function approveUser(address user) public onlyAdmin {
+        require(users[user].exists, "User does not exist");
+        require(!users[user].isVerified, "User already verified");
+        require(users[user].isPending, "User not in pending status");
+        
         users[user].isVerified = true;
-        emit UserVerified(user);
+        users[user].isPending = false;
+        removePendingUser(user);
+        emit UserVerified(user, true);
     }
 
-    // 设置验证机构
-    function setVerifier(address verifier, bool status) external onlyAdmin {
-        isVerifier[verifier] = status;
-        if (status) {
-            users[verifier].role = Role.VERIFIER;
-        }
-        emit RoleChanged(verifier, users[verifier].role);
+    function rejectUser(address user, string memory reason) public onlyAdmin {
+        require(users[user].exists, "User does not exist");
+        require(!users[user].isVerified, "User already verified");
+        require(users[user].isPending, "User not in pending status");
+        
+        users[user].isPending = false;
+        removePendingUser(user);
+        emit UserRejected(user, reason);
     }
 
-    // 设置管理员
-    function setAdmin(address admin, bool status) external onlyAdmin {
-        isAdmin[admin] = status;
-        if (status) {
-            users[admin].role = Role.ADMIN;
-        }
-        emit RoleChanged(admin, users[admin].role);
+    function addAdmin(address newAdmin) public onlyOwner {
+        require(!admins[newAdmin], "Address is already admin");
+        admins[newAdmin] = true;
+        emit AdminAdded(newAdmin);
     }
 
-    // 获取用户信息
-    function getUserInfo(address user) external view returns (
-        bytes32 emailHash,
-        bytes32 infoHash,
+    function removeAdmin(address admin) public onlyOwner {
+        require(admin != owner, "Cannot remove owner from admin");
+        require(admins[admin], "Address is not admin");
+        admins[admin] = false;
+        emit AdminRemoved(admin);
+    }
+
+    function isAdmin(address user) public view returns (bool) {
+        return admins[user];
+    }
+
+    function getUserStatus(address user) public view returns (
+        bool exists,
         bool isVerified,
-        Role role,
+        bool isPending,
         uint256 registrationTime
     ) {
-        UserInfo memory userInfo = users[user];
-        return (
-            userInfo.emailHash,
-            userInfo.infoHash,
-            userInfo.isVerified,
-            userInfo.role,
-            userInfo.registrationTime
-        );
+        UserInfo memory info = users[user];
+        return (info.exists, info.isVerified, info.isPending, info.registrationTime);
+    }
+
+    function getPendingUsers() public view returns (
+        address[] memory addresses,
+        string[] memory emails,
+        string[] memory personalInfos,
+        uint256[] memory registrationTimes
+    ) {
+        uint256 length = pendingUsers.length;
+        addresses = new address[](length);
+        emails = new string[](length);
+        personalInfos = new string[](length);
+        registrationTimes = new uint256[](length);
+
+        for (uint256 i = 0; i < length; i++) {
+            address userAddr = pendingUsers[i];
+            UserInfo memory user = users[userAddr];
+            addresses[i] = userAddr;
+            emails[i] = user.email;
+            personalInfos[i] = user.personalInfo;
+            registrationTimes[i] = user.registrationTime;
+        }
+        return (addresses, emails, personalInfos, registrationTimes);
+    }
+
+    function removePendingUser(address user) private {
+        for (uint i = 0; i < pendingUsers.length; i++) {
+            if (pendingUsers[i] == user) {
+                pendingUsers[i] = pendingUsers[pendingUsers.length - 1];
+                pendingUsers.pop();
+                break;
+            }
+        }
     }
 } 

@@ -1,5 +1,6 @@
 import { http, createConfig } from 'wagmi'
 import { type Chain } from 'viem'
+import { injected } from 'wagmi/connectors'
 
 // 定义本地开发网络
 export const localhost: Chain = {
@@ -23,6 +24,9 @@ export const localhost: Chain = {
 // 配置wagmi客户端
 export const config = createConfig({
   chains: [localhost],
+  connectors: [
+    injected(),
+  ],
   transports: {
     [localhost.id]: http('http://127.0.0.1:8545'),
   },
