@@ -1,24 +1,32 @@
 import { useState, useEffect } from 'react'
-import { useAccount } from 'wagmi'
-import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
+import { useAccount, useContractWrite, useWaitForTransactionReceipt, usePublicClient } from 'wagmi'
+import { keccak256, stringToBytes } from 'viem'
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '../../config/contract'
 import { type BaseError } from 'viem'
+import { Hash } from 'viem'
 
 type RegistrationState = 'idle' | 'signing' | 'confirming' | 'success' | 'error'
 
-export default function Register() {
+// 定义 props 接口，包含 onSuccess 回调
+interface RegisterProps {
+  onSuccess: () => void; // 添加 onSuccess 类型
+}
+
+export default function Register({ onSuccess }: RegisterProps) {
   const [email, setEmail] = useState('')
   const [personalInfo, setPersonalInfo] = useState('')
   const [phone, setPhone] = useState('')
   const [transactionHash, setTransactionHash] = useState<`0x${string}` | undefined>()
   const [error, setError] = useState<string | null>(null)
   const [state, setState] = useState<RegistrationState>('idle')
+  const [success, setSuccess] = useState<string | null>(null)
 
-  const { address } = useAccount()
-  const { writeContract, isPending: isSigning } = useWriteContract()
-  const { isLoading: isConfirming, isSuccess: isConfirmed, isError: isConfirmingError } = useWaitForTransactionReceipt({
+  const { address, isConnected } = useAccount()
+  const { writeContract, isPending: isSigning } = useContractWrite()
+  const { isLoading: isConfirming, isSuccess: isConfirmed, error: receiptError } = useWaitForTransactionReceipt({
     hash: transactionHash,
   })
+  const publicClient = usePublicClient()
 
   // 重置表单状态
   const resetState = () => {
@@ -95,17 +103,21 @@ export default function Register() {
   // 监听交易确认状态
   useEffect(() => {
     if (isConfirmed) {
+      setSuccess('注册成功！您的信息已提交，等待管理员审核。')
       setState('success')
       // 成功后清空表单
       setEmail('')
       setPersonalInfo('')
       setPhone('')
+      setTransactionHash(undefined)
+      onSuccess() // 调用父组件传递的 onSuccess 回调
     }
-    if (isConfirmingError) {
-        setError('交易确认失败，请检查区块链浏览器获取详情')
-        setState('error')
+    if (receiptError) {
+      setError(`交易确认失败: ${receiptError.message}`)
+      setState('error')
+      setTransactionHash(undefined) // 清除哈希
     }
-  }, [isConfirmed, isConfirmingError])
+  }, [isConfirmed, receiptError, onSuccess])
 
   const isLoading = state === 'signing' || state === 'confirming'
 

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>去中心化身份认证平台</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- 确保使用正确的 ethers.js v6 CDN 链接和正确的 integrity 值 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js" 
+            integrity="sha512-bLwLr3lzJN1cvtbClBMhKDyaD0uocWmphiqO8v0w3/z/XqUwzkM00gZq7BV3dQS9mQu0rarZMTsxlcnIHszElA==" 
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- 引入 ethers.js -->
+    <script src="https://cdn.ethers.io/lib/ethers-6.7.0.umd.min.js" type="application/javascript"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold">去中心化身份认证平台</h1>
+            <div class="flex items-center space-x-4">
+                <a href="#" id="adminGuideButton" class="text-indigo-500 hover:text-indigo-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    管理员登录
+                </a>
+                <a href="help.html" class="text-blue-500 hover:text-blue-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    帮助
+                </a>
+            </div>
+        </header>
+        
+        <!-- 钱包连接部分 -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div id="walletStatus" class="flex justify-between items-center">
+                <span id="accountDisplay" class="text-gray-600">未连接钱包</span>
+                <button id="connectWallet" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+                    连接钱包
+                </button>
+            </div>
+        </div>
+
+        <!-- 用户状态显示 -->
+        <div id="userStatus" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
+            <h2 class="text-xl font-bold mb-4">用户状态</h2>
+            <p id="statusMessage" class="text-gray-600"></p>
+        </div>
+
+        <!-- 注册表单 -->
+        <div id="registerForm" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
+            <h2 class="text-xl font-bold mb-4">用户注册</h2>
+            <form id="registrationForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">邮箱</label>
+                    <input type="email" id="email" required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">个人信息</label>
+                    <textarea id="personalInfo" required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
+                </div>
+                <button type="submit" 
+                    class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    提交注册
+                </button>
+            </form>
+        </div>
+
+        <!-- 用户信息显示 -->
+        <div id="userProfile" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
+            <h2 class="text-xl font-bold mb-4">用户信息</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="font-medium text-gray-700">钱包地址：</label>
+                    <p id="profileAddress" class="mt-1"></p>
+                </div>
+                <div>
+                    <label class="font-medium text-gray-700">邮箱：</label>
+                    <p id="profileEmail" class="mt-1"></p>
+                </div>
+                <div>
+                    <label class="font-medium text-gray-700">个人信息：</label>
+                    <p id="profileInfo" class="mt-1"></p>
+                </div>
+                <div>
+                    <label class="font-medium text-gray-700">注册时间：</label>
+                    <p id="profileTime" class="mt-1"></p>
+                </div>
+                <div>
+                    <label class="font-medium text-gray-700">验证状态：</label>
+                    <p id="profileVerified" class="mt-1"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 管理员面板 -->
+        <div id="adminPanel" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
+            <h2 class="text-xl font-bold mb-4">管理员面板</h2>
+            <div id="pendingUsers" class="space-y-4">
+                <!-- 待审核用户列表将通过 JavaScript 动态添加 -->
+            </div>
+        </div>
+
+        <!-- 消息提示 -->
+        <div id="messageBox" class="fixed bottom-4 right-4 max-w-sm"></div>
+    </div>
+
+    <script src="./js/config.js"></script>
+    <script src="./js/utils.js"></script>
+    <script src="./js/wallet.js"></script>
+    <script src="./js/contract.js"></script>
+    <script src="./js/app.js"></script>
+</body>
+</html> 

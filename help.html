@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>帮助中心 - 去中心化身份认证平台</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8">帮助中心</h1>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">管理员信息</h2>
+            <div class="space-y-4">
+                <p>管理员账户是部署合约的账户（合约创建者）。通常是使用 Truffle 部署合约时的第一个账户。</p>
+                
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-yellow-700">
+                                在 Ganache 本地开发环境中，管理员账户是第一个账户。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 p-4 rounded-md font-mono text-sm overflow-auto">
+                    <p><strong>当前部署合约的管理员账户：</strong></p>
+                    <p>地址: 0xE87df4e9951B39e580b23746c884e0cd7dFBA2d7</p>
+                    <p class="mt-2 text-xs text-gray-500">注意：管理员账户是部署合约时使用的账户。如果您重新部署了合约，管理员账户可能会发生变化。</p>
+                </div>
+                
+                <div class="mt-4 bg-gray-50 p-4 rounded-md font-mono text-sm overflow-auto">
+                    <p><strong>Ganache 确定性模式下的默认账户：</strong></p>
+                    <p>地址: 0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1</p>
+                    <p>私钥: 0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d</p>
+                    <p class="mt-2 text-xs text-gray-500">注意：这是 Ganache 使用 --wallet.deterministic 选项启动时的第一个账户</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">如何登录管理员账户</h2>
+            <ol class="list-decimal pl-5 space-y-2">
+                <li>打开 MetaMask 钱包</li>
+                <li>点击右上角的账户图标，选择「导入账户」</li>
+                <li>选择「私钥」方式导入</li>
+                <li>输入管理员账户的私钥（通常是部署合约时使用的账户）</li>
+                <li>点击「导入」按钮</li>
+                <li>导入成功后，确保 MetaMask 切换到该账户</li>
+                <li>刷新应用页面</li>
+                <li>点击「连接钱包」按钮</li>
+                <li>如果是管理员账户，系统会自动显示管理员面板</li>
+            </ol>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">检查账户是否为管理员</h2>
+            <p class="mb-4">您可以通过以下方式检查某个账户是否为管理员：</p>
+            <div class="bg-gray-50 p-4 rounded-md font-mono text-sm overflow-auto">
+                <p>1. 打开浏览器控制台 (F12)</p>
+                <p>2. 连接钱包后，系统会在控制台打印当前账户是否为管理员</p>
+                <p>3. 您也可以手动调用合约检查：</p>
+                <p class="mt-2">await contract.isAdmin('0x您的钱包地址');</p>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold mb-4">其他说明</h2>
+            <ul class="list-disc pl-5 space-y-2">
+                <li>管理员账户可以审核用户的注册申请</li>
+                <li>管理员账户也可以注册成为普通用户</li>
+                <li>如需更改管理员账户，需要修改智能合约并重新部署</li>
+                <li>在生产环境中，请妥善保管管理员账户的私钥</li>
+            </ul>
+        </div>
+        
+        <div class="mt-8 text-center">
+            <a href="index.html" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">返回主页</a>
+        </div>
+    </div>
+</body>
+</html> 

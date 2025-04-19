@@ -1,7 +1,7 @@
 import { parseAbi, type Address } from 'viem'
 
 // 合约地址
-export const CONTRACT_ADDRESS = '0x6e2B169d63461A4D2c0b42a7f0A346c9f672FC0F' as Address
+export const CONTRACT_ADDRESS = '0x9589333a52ace5649D94bC907A1e883F7Cdcbe5A' as Address
 
 // 合约ABI
 export const CONTRACT_ABI = [

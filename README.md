@@ -124,3 +124,7 @@
 ## 许可证
 
 [MIT](./LICENSE) (如果需要，请添加 LICENSE 文件) 
+
+
+cd frontend && npm run dev
+npx ganache
